@@ -7,8 +7,7 @@ import java.util.*;
 //            Jugador
 
 public class Club
-        implements Serializable
-{
+        implements Serializable {
 
     public Club() {
         jugadores = new Hashtable();
@@ -20,53 +19,49 @@ public class Club
         this.nombre = nombre;
     }
 
-    public String getId() {return id;}
+    public String getId() {
+        return id;
+    }
 
-    public void setId(String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getNombre()
-    {
+    public String getNombre() {
         return nombre;
     }
 
-    public void setNombre(String nombre)
-    {
+    public void setNombre(String nombre) {
         this.nombre = nombre;
     }
 
-    public void addJugador(String id, Jugador jugador)
-    {
+    public void addJugador(String id, Jugador jugador) {
         jugadores.put(id, jugador);
     }
 
-    public void updateJugador(String id, Jugador jugador)
-    {
-        if(jugadores.get(id) != null)
+    public void updateJugador(String id, Jugador jugador) {
+        if (jugadores.get(id) != null)
             jugadores.replace(id, jugador);
     }
 
-    public boolean removeJugador(String id)
-    {
-        if(jugadores.get(id) != null)
-        {
+    public boolean removeJugador(String id) {
+        if (jugadores.get(id) != null) {
             jugadores.remove(id);
             return true;
-        } else
-        {
+        } else {
             return false;
         }
     }
 
-    public int totalJugadores() {return jugadores.size();}
+    public int totalJugadores() {
+        return jugadores.size();
+    }
 
     public ArrayList getJugadores() {
         ArrayList jugadores = new ArrayList();
         Jugador jugador;
-        for(Iterator iterator = this.jugadores.values().iterator(); iterator.hasNext(); jugadores.add(jugador))
-            jugador = (Jugador)iterator.next();
+        for (Iterator iterator = this.jugadores.values().iterator(); iterator.hasNext(); jugadores.add(jugador))
+            jugador = (Jugador) iterator.next();
 
         return jugadores;
     }
