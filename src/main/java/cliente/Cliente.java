@@ -8,7 +8,7 @@ import java.util.Scanner;
 
 public class Cliente {
     public static void main(String[] args) {
-        // Configuramos la conexión al puerto de COMANDOS (5000)
+
         String host = "localhost";
         int puerto = 5000;
 
@@ -24,7 +24,6 @@ public class Cliente {
             String opcionUsuario;
 
             do {
-                // Menú básico para probar la autenticación
                 System.out.println("\n--- CLIENTE CLUB DEPORTIVO ---");
                 System.out.println("Escribe el comando completo (Ej: USER admin)");
                 System.out.println("O elige una opción rápida:");
@@ -48,13 +47,13 @@ public class Cliente {
                     case "3":
                         comandoAEnviar = "EXIT";
                         break;
+
                     default:
-                        // Permite escribir comandos manuales si quieres probar cosas raras
+                        // Permite escribir comandos manuales
                         comandoAEnviar = opcionUsuario;
                         break;
                 }
 
-                // --- AQUÍ OCURRE LA MAGIA DEL PROTOCOLO ---
                 // Concatenamos el ID del mensaje antes del comando
                 String mensajeProtocolo = idMensaje + " " + comandoAEnviar;
 

@@ -3,8 +3,12 @@ package servidor;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
+
+import modelos.Club;
 
 public class ServerThread extends Thread {
     private Socket socket;
@@ -48,7 +52,12 @@ public class ServerThread extends Thread {
                         pw.println("OK " + numeroEnvio + " 200 Bye");
                         socket.close();
                         return;
-
+                    case "ADDCLUB":
+                        if (loginCorrecto) {
+                            procesarAddClub(numeroEnvio);
+                        } else {
+                            pw.println("FAILED " + numeroEnvio + " 403 Necesitas iniciar sesión primero");
+                        }
                     default:
                         if (!loginCorrecto) {
                             pw.println("FAILED " + numeroEnvio + " 403 Necesitas hacer login primero");
@@ -60,7 +69,7 @@ public class ServerThread extends Thread {
             }
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 
@@ -95,11 +104,33 @@ public class ServerThread extends Thread {
         String pass = partes[2]; // Estamos cogiendo como valor de contraseña la tercera palabra del comando
         if (pass.equalsIgnoreCase("admin")) { // Si la contraseña es "admin" entonces tod0 guay
             loginCorrecto = true;
-            pw.println("OK " + num + "200 Welcome " + nombreUsuario);
+            pw.println("OK " + num + " 200 Bienvenido " + nombreUsuario);
         } else {
             loginCorrecto = false;
             usuarioCorrecto = false;
             pw.println("FAILED " + num + " 403 Contraseña incorrecta");
+        }
+    }
+
+    private void procesarAddClub(String num) throws IOException {
+        // Abriendo un puerto para DATOS en 0 para que el sistema nos dé uno libre
+        try (ServerSocket dataSocket = new ServerSocket(0)) {
+            int puertoDatos = dataSocket.getLocalPort();
+            pw.println("PREOK " + num + " 200 localhost " + puertoDatos);
+
+            // Espera a que el cliente se conecte para enviar el objeto Club
+            try (Socket clienteDatos = dataSocket.accept();) {
+                ObjectInputStream ois = new ObjectInputStream(clienteDatos.getInputStream());
+                Club nuevoClub = (Club) ois.readObject(); // Leyendo el objeto que el cliente ha creado y pasado por el Socket
+
+                synchronized (Server.clubes) {
+                    Server.clubes.add(nuevoClub);
+                }
+                pw.println("OK " + num + " 201 Club creado con exito " + nuevoClub.getNombre());
+            } catch (Exception e) {
+                e.printStackTrace();
+                pw.println("FAILED " + num + " 500 Usuario incorrecto");
+            }
         }
     }
 }
