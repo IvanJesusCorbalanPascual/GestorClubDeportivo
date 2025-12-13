@@ -10,8 +10,6 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import modelos.Club;
-
 public class ServerThread extends Thread {
     private Socket socket;
     private BufferedReader br;
@@ -50,22 +48,28 @@ public class ServerThread extends Thread {
                     case "PASS":
                         procesarPass(numeroEnvio, partes);
                         break;
-                    case "LISTCLUBES":
-                        procesarListClubes(numeroEnvio);
-                        break;
-                    case "GETCLUB":
-                        procesarGetClub(numeroEnvio, partes);
-                        break;
-                    case "EXIT":
-                        pw.println("OK " + numeroEnvio + " 200 Bye");
-                        socket.close();
-                        return;
                     case "ADDCLUB":
                         if (loginCorrecto) {
                             procesarAddClub(numeroEnvio);
                         } else {
                             pw.println("FAILED " + numeroEnvio + " 403 Necesitas iniciar sesión primero");
                         }
+                        break;
+                    case "LISTCLUBES":
+                        procesarListClubes(numeroEnvio);
+                        break;
+                    case "GETCLUB":
+                        procesarGetClub(numeroEnvio, partes);
+                        break;
+                    case "UPDATECLUB":
+                        procesarUpdateClub(numeroEnvio, partes);
+                        break;
+                    case "REMOVECLUB":
+                        break;
+                    case "EXIT":
+                        pw.println("OK " + numeroEnvio + " 200 Bye");
+                        socket.close();
+                        return;
                     default:
                         if (!loginCorrecto) {
                             pw.println("FAILED " + numeroEnvio + " 403 Necesitas hacer login primero");
@@ -84,7 +88,7 @@ public class ServerThread extends Thread {
     // --- METODOS DE COMANDOS ---
 
     // Metodo que válida si el usuario puede acceder al sistema o no en base a su nombre
-    public void procesarUser(String num, String[] partes) {
+    public void procesarUser(String numeroEnvio, String[] partes) {
         if (partes.length < 3) {
             pw.println("Error, formato incorrecto");
         }
@@ -92,39 +96,39 @@ public class ServerThread extends Thread {
         if (user.equalsIgnoreCase("admin")) {
             usuarioCorrecto = true;
             nombreUsuario = "admin"; // Si el nombre es "admin" entonces el usuario es válido
-            pw.println("OK " + num + " 201 Envie contraseña");
+            pw.println("OK " + numeroEnvio + " 201 Envie contraseña");
         } else {
             usuarioCorrecto = false;
-            pw.println("FAILED " + num + " 401 Usuario incorrecto");
+            pw.println("FAILED " + numeroEnvio + " 401 Usuario incorrecto");
         }
     }
 
     // Metodo que válida si la contraseña "PASS" es correcta
-    private void procesarPass(String num, String[] partes) {
+    private void procesarPass(String numeroEnvio, String[] partes) {
         if (!usuarioCorrecto) {
-            pw.println("FAILED " + num + " 402 Primero envíe <USER>");
+            pw.println("FAILED " + numeroEnvio + " 402 Primero envíe <USER>");
             return;
         }
         if (partes.length < 3) {
-            pw.println("FAILED " + num + " 401 Usuario incorrecto");
+            pw.println("FAILED " + numeroEnvio + " 401 Usuario incorrecto");
             return;
         }
         String pass = partes[2]; // Estamos cogiendo como valor de contraseña la tercera palabra del comando
         if (pass.equalsIgnoreCase("admin")) { // Si la contraseña es "admin" entonces tod0 guay
             loginCorrecto = true;
-            pw.println("OK " + num + " 200 Bienvenido " + nombreUsuario);
+            pw.println("OK " + numeroEnvio + " 200 Bienvenido " + nombreUsuario);
         } else {
             loginCorrecto = false;
             usuarioCorrecto = false;
-            pw.println("FAILED " + num + " 403 Contraseña incorrecta");
+            pw.println("FAILED " + numeroEnvio + " 403 Contraseña incorrecta");
         }
     }
 
-    private void procesarAddClub(String num) throws IOException {
+    private void procesarAddClub(String numeroEnvio) throws IOException {
         // Abriendo un puerto para DATOS en 0 para que el sistema nos dé uno libre
         try (ServerSocket dataSocket = new ServerSocket(0)) {
             int puertoDatos = dataSocket.getLocalPort();
-            pw.println("PREOK " + num + " 200 localhost " + puertoDatos);
+            pw.println("PREOK " + numeroEnvio + " 200 localhost " + puertoDatos);
 
             // Espera a que el cliente se conecte para enviar el objeto Club
             try (Socket clienteDatos = dataSocket.accept();) {
@@ -134,30 +138,31 @@ public class ServerThread extends Thread {
                 synchronized (Server.clubes) {
                     Server.clubes.add(nuevoClub);
                 }
-                pw.println("OK " + num + " 201 Club creado con exito " + nuevoClub.getNombre());
+                pw.println("OK " + numeroEnvio + " 201 Club creado con exito " + nuevoClub.getNombre());
             } catch (Exception e) {
                 e.printStackTrace();
-                pw.println("FAILED " + num + " 500 Usuario incorrecto");
+                pw.println("FAILED " + numeroEnvio + " 500 Usuario incorrecto");
             }
         }
     }
-    private void procesarListClubes(String num) {
+
+    private void procesarListClubes(String numeroEnvio) {
         // Si no se ha logueado, no puede ver nada
         if (!loginCorrecto) {
-            pw.println("FAILED " + num + " 403 Es necesario hacer login primero");
+            pw.println("FAILED " + numeroEnvio + " 403 Es necesario hacer login primero");
             return;
         }
         // Le pasa la lista de clubes de server
-        enviarObjeto(num, Server.clubes);
+        enviarObjeto(numeroEnvio, Server.clubes);
     }
 
-    private void procesarGetClub(String num, String[] partes) {
+    private void procesarGetClub(String numeroEnvio, String[] partes) {
         if (!loginCorrecto) {
-            pw.println("FAILED " + num + " 403 Es necesario hacer login primero");
+            pw.println("FAILED " + numeroEnvio + " 403 Es necesario hacer login primero");
             return;
         }
         if (partes.length < 3) {
-            pw.println("FAILED " + num + " 404 Falta el ID del club (Ejemplo: GETCLUB 1)");
+            pw.println("FAILED " + numeroEnvio + " 404 Falta el ID del club (Ejemplo: GETCLUB 1)");
             return;
         }
 
@@ -177,13 +182,58 @@ public class ServerThread extends Thread {
         }
         // Si existe lo envia, en caso contrario da error
         if (clubEncontrado != null) {
-            enviarObjeto(num, clubEncontrado);
+            enviarObjeto(numeroEnvio, clubEncontrado);
         } else {
-            pw.println("FAILED" + num + "404 No se ha encontrado el club con ese ID");
+            pw.println("FAILED" + numeroEnvio + "No se ha encontrado el club con ese ID");
         }
     }
 
-    private void enviarObjeto(String num, Object objetoAEnviar) {
+    private void procesarUpdateClub(String numeroEnvio, String[] partes) {
+        if (partes.length < 3) {
+            pw.println("FAILED " + numeroEnvio + " 404 Falta el ID del club (UPDATECLUB <id>)");
+            return;
+        }
+        String idBuscado = partes[2];
+        Club clubAActualizar = null;
+
+        // Bucle que busca dentro del ArrayList "clubes" uno con el id pasado, si lo encuentra lo actualiza
+        synchronized (Server.clubes) {
+            for (Club c : Server.clubes) {
+                if (c.getId().equals(idBuscado)) {
+                    clubAActualizar = c;
+                    break;
+                }
+            }
+        }
+
+        // Si el club no se ha encontrado, esta variable seguirá siendo null y por lo tanto se cancela la operacion
+        if (clubAActualizar == null) {
+            pw.println("FAILED " + numeroEnvio + " 404 No existe un club con ese ID");
+            return;
+        }
+
+        try (ServerSocket dataSocket = new ServerSocket(0)) {
+            int puertoDatos = dataSocket.getLocalPort();
+            pw.println("PREOK " + numeroEnvio + " 200 localhost " + puertoDatos);
+
+            try (Socket clienteDatos = dataSocket.accept();) {
+                ObjectInputStream ois = new ObjectInputStream(clienteDatos.getInputStream());
+                // Leemos los datos del club una vez ya ha sido actualizado
+                Club clubActualizado = (Club) ois.readObject();
+
+                synchronized (Server.clubes) {
+                    clubAActualizar.setNombre(clubActualizado.getNombre());
+                }
+                pw.println("OK " + numeroEnvio + " 200 Club Actualizado con exito " + clubAActualizar.getNombre());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            pw.println("FAILED " + numeroEnvio + " 500 Error al actualizar");
+        }
+    }
+
+    private void enviarObjeto(String numeroEnvio, Object objetoAEnviar) {
         try {
             // Al poner 0, busca automáticamente un puerto libre
             java.net.ServerSocket servidorDatos = new java.net.ServerSocket(0);
@@ -192,7 +242,7 @@ public class ServerThread extends Thread {
 
             // Avisa al cliente por el canal de comandos
             String miIp = socket.getInetAddress().getHostAddress();
-            pw.println("PREOK " + num + " 200 " + miIp + " " + puertoDatos);
+            pw.println("PREOK " + numeroEnvio + " 200 " + miIp + " " + puertoDatos);
 
             // Espera a que el cliente se conecte
             Socket socketDatos = servidorDatos.accept();
@@ -209,11 +259,11 @@ public class ServerThread extends Thread {
             socketDatos.close();
             servidorDatos.close();
 
-            pw.println("OK " + num + " 200 Transferencia completada");
+            pw.println("OK " + numeroEnvio + " 200 Transferencia completada");
 
         } catch (IOException e) {
             e.printStackTrace();
-            pw.println("FAILED " + num + " 500 Error interno al enviar los datos");
+            pw.println("FAILED " + numeroEnvio + " 500 Error interno al enviar los datos");
         }
     }
 

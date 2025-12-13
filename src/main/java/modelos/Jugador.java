@@ -3,9 +3,8 @@ package modelos;
 import java.io.Serializable;
 
 public class Jugador implements Serializable {
-    // Al implementar Serializable, le estamos diciendo a Java que la clase puede ser "serializada"
-    // (convertida a secuencia de bytes) para poder ser enviada mediante el socket con ObjetOut/inputStream
-
+    // Al implementar Serializable, le estamos diciendo a Java que la clase puede ser "serializada" (convertida a secuencia de bytes)
+    // para poder enviar los objetos de esta clase por el socket con ObjetOut/inputStream
 
     public Jugador() {
     } // Constructor vacío

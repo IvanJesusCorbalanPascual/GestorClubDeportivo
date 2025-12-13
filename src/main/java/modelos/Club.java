@@ -72,12 +72,8 @@ public class Club
     private Hashtable jugadores;
 
     @Override
-    public String toString() {
-        return "Club{" +
-                "id='" + id + '\'' +
-                ", nombre='" + nombre + '\'' +
-                ", jugadores=" + jugadores.size() +
-                '}';
+    public String toString() { // toString mejorado visualmente
+        return "[ID: " + id + "] " + nombre + " (" + (jugadores != null ? jugadores.size() : 0) + " jugadores)";
     }
 }
 
