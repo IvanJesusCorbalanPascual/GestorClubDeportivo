@@ -51,11 +51,7 @@ public class ServerThread extends Thread {
                         procesarPass(numeroEnvio, partes);
                         break;
                     case "ADDCLUB":
-                        if (loginCorrecto) {
-                            procesarAddClub(numeroEnvio);
-                        } else {
-                            pw.println("FAILED " + numeroEnvio + " 403 Necesitas iniciar sesión primero");
-                        }
+                        procesarAddClub(numeroEnvio);
                         break;
                     case "LISTCLUBES":
                         procesarListClubes(numeroEnvio);
@@ -135,6 +131,10 @@ public class ServerThread extends Thread {
     }
 
     private void procesarAddClub(String numeroEnvio) throws IOException {
+        if (!loginCorrecto) {
+            pw.println("FAILED " + numeroEnvio + " 403 Es necesario hacer login primero");
+            return;
+        }
         // Abriendo un puerto para DATOS en 0 para que el sistema nos dé uno libre
         try (ServerSocket dataSocket = new ServerSocket(0)) {
             int puertoDatos = dataSocket.getLocalPort();
@@ -313,7 +313,7 @@ public class ServerThread extends Thread {
             int puertoDatos = servidorDatos.getLocalPort();
 
             // Avisa al cliente por el canal de comandos
-            String miIp = socket.getInetAddress().getHostAddress();
+            String miIp = socket.getLocalAddress().getHostAddress();
             pw.println("PREOK " + numeroEnvio + " 200 " + miIp + " " + puertoDatos);
 
             // Espera a que el cliente se conecte

@@ -26,87 +26,38 @@ public class Cliente {
              BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
              Scanner sc = new Scanner(System.in)) {
 
-            // Variable para llevar la cuenta de los mensajes (Protocolo: <number> <comando>)
+            // Variable para llevar la cuenta de los mensajes (número de envío)
             int idMensaje = 1;
-            String opcionUsuario = "";
-
+            String comandoAEnviar = "";
 
             do {
-                String comandoAEnviar = "";
+                // Si el usuario aun no ha iniciado sesion, solo tendrá acceso a este menú
                 if (sesionIniciada == false) {
-                    System.out.println("\n--- CLIENTE CLUB DEPORTIVO ---");
-                    System.out.println("Escribe el comando completo (Ej: USER admin)");
-                    System.out.println("1. Introducir Usuario USER <username>");
-                    System.out.println("2. Introducir Clave -> PASS <password>");
-                    System.out.println("3. Salir -> (EXIT)");
-                    System.out.print("➡ ");
-                    opcionUsuario = sc.nextLine();
+                    System.out.println("\n--- INICIO DE SESION ---");
+                    System.out.println(" > USER <nombre>      (Ej: USER admin)");
+                    System.out.println(" > PASS <contraseña>  (Ej: PASS admin)");
+                    System.out.println(" > EXIT               (Salir del programa)");
 
-                    switch (opcionUsuario) {
-                        case "1":
-                            System.out.println("Introduce el nombre del usuario");
-                            String username = sc.nextLine();
-                            comandoAEnviar = "USER " + username;
-                            break;
-                        case "2":
-                            System.out.println("Introduce la Contraseña");
-                            String password = sc.nextLine();
-                            comandoAEnviar = "PASS " + password;
-                            break;
-                        case "3":
-                            comandoAEnviar = "EXIT";
-                            break;
-                        default:
-                            // Permite escribir comandos manuales
-                            System.out.println("Comando desconocido o no permitido, porfavor inicie sesión");
-                            continue;
-                    }
+                    // Cuando el usuario haya iniciado sesion, desbloqueará el acceso a todas las opciones del CRUD
                 } else if (sesionIniciada == true) {
-                    System.out.println("\n--- CLIENTE CLUB DEPORTIVO ---");
-                    System.out.println("1. Crear Club -> ADDCLUB <Id> <nombreClub>");
-                    System.out.println("2. Listar Clubes -> LISTCLUBES");
-                    System.out.println("3. Buscar Club -> GETCLUB <IdClub>");
-                    System.out.println("4. Actualizar Club -> UPDATECLUB <IdClub> <nombreClub>");
-                    System.out.println("5. Eliminar Club -> REMOVECLUB <IdClub>");
-                    System.out.println("6. Contar Clubes -> COUNTCLUBES");
-                    System.out.println("7. Salir -> EXIT");
-
-                    opcionUsuario = sc.nextLine();
-
-                    switch (opcionUsuario) {
-                        case "1":
-                            comandoAEnviar = "ADDCLUB";
-                            break;
-                        case "2":
-                            comandoAEnviar = "LISTCLUBES";
-                            break;
-                        case "3":
-                            System.out.println("Escribe el ID del club a obtener: ");
-                            String idClub = sc.nextLine();
-                            comandoAEnviar = "GETCLUB " + idClub;
-                            break;
-                        case "4":
-                            System.out.println("Escribe el ID del club a actualizar: ");
-                            idClub = sc.nextLine();
-                            comandoAEnviar = "UPDATECLUB " + idClub;
-                            break;
-                        case "5":
-                            System.out.println("Escribe el ID del club a eliminar: ");
-                            idClub = sc.nextLine();
-                            comandoAEnviar = "REMOVECLUB " + idClub;
-                            break;
-                        case "6":
-                            comandoAEnviar = "COUNTCLUBES";
-                            break;
-                        case "7":
-                            comandoAEnviar = "EXIT";
-                            break;
-                        default:
-                            // Comandos desconocidos o mal escritos
-                            comandoAEnviar = opcionUsuario;
-                            continue;
-                    }
+                    System.out.println("\n--- SISTEMA GESTIÓN DEPORTIVA [🍏GreenTonic🍏]---");
+                    System.out.println(" > ADDCLUB <id> <nombre>   (Crea un nuevo club)");
+                    System.out.println(" > LISTCLUBES              (Lista todos los clubes)");
+                    System.out.println(" > GETCLUB <id>            (Ej: GETCLUB 1)");
+                    System.out.println(" > UPDATECLUB <id>         (Ej: UPDATECLUB 1)");
+                    System.out.println(" > REMOVECLUB <id>         (Ej: REMOVECLUB 1)");
+                    System.out.println(" > COUNTCLUBES             (Cuenta total de clubes)");
+                    System.out.println(" > ADDJUGADOR              (Crea un nuevo jugador)");
+                    System.out.println(" > ADDJUGADOR2CLUB <idJ> <idC> (Añade jugador a un club)");
+                    System.out.println(" > EXIT                    (Cierra sesión y sale)");
                 }
+
+                System.out.print("root@club-deportivo:~$ "); // Un prompt estilo terminal que queda chulo
+                String inputUsuario = sc.nextLine().trim().toUpperCase();
+
+                if (inputUsuario.isEmpty()) continue; // Manejo de errores de mensajes en blanco
+                String[] partes = inputUsuario.split(" ");
+                comandoAEnviar = inputUsuario;
 
                 // Concatenamos el ID del mensaje antes del comando
                 String mensajeProtocolo = idMensaje + " " + comandoAEnviar;
@@ -114,7 +65,6 @@ public class Cliente {
                 System.out.println("[Cliente envía]: " + mensajeProtocolo);
                 pw.println(mensajeProtocolo);
 
-                // Leemos la respuesta del servidor
                 // Leemos la respuesta del servidor
                 String respuesta = br.readLine();
                 System.out.println("[Servidor responde]: " + respuesta);
@@ -127,20 +77,13 @@ public class Cliente {
                 if (respuesta != null && respuesta.startsWith("PREOK")) {
 
                     if (comandoAEnviar.startsWith("ADDCLUB")) {
-                        System.out.println("Escribe el id:");
-                        String idClub = sc.nextLine();
-                        System.out.println("Escribe el nombre:");
-                        String nombreClub = sc.nextLine();
-                        modelos.Club nuevoClub = new modelos.Club(idClub, nombreClub);
+                        modelos.Club nuevoClub = new modelos.Club(partes[1], partes[2]);
                         enviarClubAServidor(respuesta, nuevoClub);
 
                     } else if (comandoAEnviar.startsWith("UPDATECLUB")) {
-                        String[] partes = comandoAEnviar.split(" ");
-                        String idClub = partes[1];
-                        System.out.println("Escribe el nuevo nombre:");
-                        String nuevoNombre = sc.nextLine();
-                        Club clubActualizado = new Club(idClub, nuevoNombre);
+                        Club clubActualizado = new Club(partes[1], partes[2]);
                         enviarClubAServidor(respuesta, clubActualizado);
+
                     } else { // Llama al mét0d0 que se encarga de la conexión
                         recibirDatosDeServidor(respuesta);
                     }
@@ -153,7 +96,7 @@ public class Cliente {
                 // Incrementamos el ID para el siguiente mensaje
                 idMensaje++;
 
-            } while (!opcionUsuario.equals("7") && !opcionUsuario.equalsIgnoreCase("EXIT"));
+            } while (!comandoAEnviar.equalsIgnoreCase("EXIT"));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -178,7 +121,7 @@ public class Cliente {
 
             // Comprueba que es y lo muestra
             if (recibido instanceof java.util.List) {
-                System.out.println("He recibido la lista de clubes:");
+                System.out.println("Lista de clubes:");
                 java.util.List lista = (java.util.List) recibido;
                 for (Object o : lista) {
                     System.out.println("       - " + o);
@@ -210,7 +153,9 @@ public class Cliente {
             oos.flush();
             oos.close();
             socket.close();
+
             System.out.println("Club enviado correctamente");
+
         } catch (IOException e) {
             System.out.println("Error al enviar: " + e.getMessage());
 
