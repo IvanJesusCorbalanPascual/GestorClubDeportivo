@@ -21,9 +21,9 @@ public class Server {
             System.out.println("Servidor Iniciado en el puerto: " + puerto);
 
             // Crea y añade clubs de prueba
-            Club c1 = new Club("1", "Real Madrid");
-            Club c2 = new Club("2", "FC Barcelona");
-            Club c3 = new Club("3", "Valencia CF");
+            Club c1 = new Club("C1", "Real Madrid");
+            Club c2 = new Club("C2", "FC Barcelona");
+            Club c3 = new Club("C3", "Valencia CF");
 
             clubes.add(c1);
             clubes.add(c2);

@@ -1,6 +1,7 @@
 package cliente;
 
 import modelos.Club;
+import modelos.Jugador;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,25 +40,25 @@ public class Cliente {
 
                     // Cuando el usuario haya iniciado sesion, desbloqueará el acceso a todas las opciones del CRUD
                 } else if (sesionIniciada == true) {
-                    System.out.println("\n--- SISTEMA GESTIÓN DEPORTIVA [🍏GreenTonic🍏]---");
-                    System.out.println(" > ADDCLUB    <id> <nombre>         (Crea un nuevo club)");
-                    System.out.println(" > LISTCLUBES                       (Lista todos los clubes)");
-                    System.out.println(" > GETCLUB    <id>                  (Ej: GETCLUB 1)");
-                    System.out.println(" > UPDATECLUB <id>                  (Ej: UPDATECLUB 1)");
-                    System.out.println(" > REMOVECLUB <id>                  (Ej: REMOVECLUB 1)");
-                    System.out.println(" > COUNTCLUBES                      (Cuenta total de clubes)");
-                    System.out.println(" > ADDJUGADOR                       (Crea un nuevo jugador)");
-                    System.out.println(" > GETJUGADOR    <id>               (Crea un nuevo jugador)");
-                    System.out.println(" > REMOVEJUGADOR <id>               (Crea un nuevo jugador)");
-                    System.out.println(" > LISTJUGADORES                    (Crea un nuevo jugador)");
-                    System.out.println(" > ADDJUGADOR2CLUB   <idJ> <idC>    (Añade jugador a un club)");
-                    System.out.println(" > REMOVEJUGFROMCLUB <idJ> <idC>    (Crea un nuevo jugador)");
-                    System.out.println(" > LISTJUGFROMCLUB                  (Crea un nuevo jugador)");
-                    System.out.println(" > EXIT                             (Cierra sesión y sale)");
+                    System.out.println("\n-------------- SISTEMA GESTIÓN DEPORTIVA ------[🍏GreenTonic🍏]------");
+                    System.out.println(" > ADDCLUB    <id> <nombre>                     (Crea un nuevo club)");
+                    System.out.println(" > LISTCLUBES                                   (Lista todos los clubes)");
+                    System.out.println(" > GETCLUB    <id>                              (Ej: GETCLUB 1)");
+                    System.out.println(" > UPDATECLUB <id>                              (Ej: UPDATECLUB 1)");
+                    System.out.println(" > REMOVECLUB <id>                              (Ej: REMOVECLUB 1)");
+                    System.out.println(" > COUNTCLUBES                                  (Cuenta total de clubes)");
+                    System.out.println(" > ADDJUGADOR <id> <nombre> <apellidos> <goles> (Crea un nuevo jugador)");
+                    System.out.println(" > GETJUGADOR    <id>                           (Crea un nuevo jugador)");
+                    System.out.println(" > REMOVEJUGADOR <id>                           (Crea un nuevo jugador)");
+                    System.out.println(" > LISTJUGADORES                                (Crea un nuevo jugador)");
+                    System.out.println(" > ADDJUGADOR2CLUB   <idJugador> <idClub>       (Añade jugador a un club)");
+                    System.out.println(" > REMOVEJUGFROMCLUB <idJugador> <idClub>       (Crea un nuevo jugador)");
+                    System.out.println(" > LISTJUGFROMCLUB                              (Crea un nuevo jugador)");
+                    System.out.println(" > EXIT                                         (Cierra sesión y sale)");
                 }
 
                 System.out.print("root@club-deportivo:~$ "); // Un prompt estilo terminal que queda chulo
-                String inputUsuario = sc.nextLine().trim().toUpperCase();
+                String inputUsuario = sc.nextLine().trim();
 
                 if (inputUsuario.isEmpty()) continue; // Manejo de errores de mensajes en blanco
                 String[] partes = inputUsuario.split(" ");
@@ -73,21 +74,23 @@ public class Cliente {
                 String respuesta = br.readLine();
                 System.out.println("[Servidor responde]: " + respuesta);
 
-                if (comandoAEnviar.startsWith("PASS") && respuesta.contains(" 200 ")) {
+                if (comandoAEnviar.toUpperCase().startsWith("PASS") && respuesta.contains(" 200 ")) {
                     sesionIniciada = true;
                     System.out.println("¡Login correcto! Accediendo al sistema...");
                 }
                 // En caso de que el servidor responda con PREOK
-                if (respuesta != null && respuesta.startsWith("PREOK")) {
+                if (respuesta != null && respuesta.toUpperCase().startsWith("PREOK")) {
 
-                    if (comandoAEnviar.startsWith("ADDCLUB")) {
-                        modelos.Club nuevoClub = new modelos.Club(partes[1], partes[2]);
-                        enviarClubAServidor(respuesta, nuevoClub);
+                    if (comandoAEnviar.toUpperCase().startsWith("ADDCLUB")) {
+                        Club nuevoClub = new modelos.Club(partes[1], partes[2]);
+                        enviarObjetoAServidor(respuesta, nuevoClub);
 
-                    } else if (comandoAEnviar.startsWith("UPDATECLUB")) {
+                    } else if (comandoAEnviar.toUpperCase().startsWith("UPDATECLUB")) {
                         Club clubActualizado = new Club(partes[1], partes[2]);
-                        enviarClubAServidor(respuesta, clubActualizado);
-
+                        enviarObjetoAServidor(respuesta, clubActualizado);
+                    } else if (comandoAEnviar.toUpperCase().startsWith("ADDJUGADOR")) {
+                        Jugador nuevoJugador = new Jugador(partes[1],partes[2],partes[3],Integer.parseInt(partes[4]));
+                        enviarObjetoAServidor(respuesta, nuevoJugador);
                     } else { // Llama al mét0d0 que se encarga de la conexión
                         recibirDatosDeServidor(respuesta);
                     }
@@ -152,7 +155,7 @@ public class Cliente {
 
     }
 
-    private static void enviarClubAServidor(String respuestaPreok, Club clubAEnviar) {
+    private static void enviarObjetoAServidor(String respuestaPreok, Object objetoAEnviar) {
         try {
             String[] partes = respuestaPreok.split(" ");
             String ip = partes[3];
@@ -161,12 +164,12 @@ public class Cliente {
 
             Socket socket = new Socket(ip, puerto);
             java.io.ObjectOutputStream oos = new java.io.ObjectOutputStream(socket.getOutputStream());
-            oos.writeObject(clubAEnviar);
+            oos.writeObject(objetoAEnviar);
             oos.flush();
             oos.close();
             socket.close();
 
-            System.out.println("Club enviado correctamente");
+            System.out.println("Datos enviados correctamente");
 
         } catch (IOException e) {
             System.out.println("Error al enviar: " + e.getMessage());
