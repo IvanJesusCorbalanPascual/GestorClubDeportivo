@@ -42,20 +42,20 @@ public class Cliente {
                     // Cuando el usuario haya iniciado sesion, desbloqueará el acceso a todas las opciones del CRUD
                 } else if (sesionIniciada == true) {
                     System.out.println("\n-------------- SISTEMA GESTIÓN DEPORTIVA ------[🍏GreenTonic🍏]------");
-                    System.out.println(" > ADDCLUB    <id> <nombre>                     (Crea un nuevo club)");
-                    System.out.println(" > LISTCLUBES                                   (Lista todos los clubes)");
-                    System.out.println(" > GETCLUB    <id>                              (Ej: GETCLUB 1)");
-                    System.out.println(" > UPDATECLUB <id>                              (Ej: UPDATECLUB 1)");
-                    System.out.println(" > REMOVECLUB <id>                              (Ej: REMOVECLUB 1)");
+                    System.out.println(" > ADDCLUB    <id> <nombre>                     (Crear club)");
+                    System.out.println(" > LISTCLUBES                                   (Listar todos los clubes)");
+                    System.out.println(" > GETCLUB    <id>                              (Obtener club)");
+                    System.out.println(" > UPDATECLUB <id>                              (Actualizar club)");
+                    System.out.println(" > REMOVECLUB <id>                              (Eliminar club)");
                     System.out.println(" > COUNTCLUBES                                  (Cuenta total de clubes)");
-                    System.out.println(" > ADDJUGADOR <id> <nombre> <apellidos> <goles> (Crea un nuevo jugador)");
-                    System.out.println(" > GETJUGADOR    <id>                           (Crea un nuevo jugador)");
-                    System.out.println(" > REMOVEJUGADOR <id>                           (Crea un nuevo jugador)");
-                    System.out.println(" > LISTJUGADORES                                (Crea un nuevo jugador)");
-                    System.out.println(" > ADDJUGADOR2CLUB   <idJugador> <idClub>       (Añade jugador a un club)");
-                    System.out.println(" > REMOVEJUGFROMCLUB <idJugador> <idClub>       (Crea un nuevo jugador)");
-                    System.out.println(" > LISTJUGFROMCLUB                              (Crea un nuevo jugador)");
-                    System.out.println(" > EXIT                                         (Cierra sesión y sale)");
+                    System.out.println(" > ADDJUGADOR <id> <nombre> <apellidos> <goles> (Crear jugador)");
+                    System.out.println(" > GETJUGADOR    <id>                           (Obtener jugador)");
+                    System.out.println(" > REMOVEJUGADOR <id>                           (Eliminar jugador)");
+                    System.out.println(" > LISTJUGADORES                                (Listar todos los jugadores)");
+                    System.out.println(" > ADDJUGADOR2CLUB   <idJugador> <idClub>       (Agregar jugador a un club)");
+                    System.out.println(" > REMOVEJUGFROMCLUB <idJugador> <idClub>       (Eliminar jugador de un club)");
+                    System.out.println(" > LISTJUGFROMCLUB                              (Listar todos los jugadores de un club)");
+                    System.out.println(" > EXIT                                         (Cerrar sesión y salir)");
                 }
 
                 System.out.print("root@club-deportivo:~$ "); // Un prompt estilo terminal que queda chulo
@@ -64,6 +64,7 @@ public class Cliente {
                 if (inputUsuario.isEmpty()) continue; // Manejo de errores de mensajes en blanco
                 String[] partes = inputUsuario.split(" ");
                 comandoAEnviar = inputUsuario;
+                String comandoToUpperCase = comandoAEnviar.toUpperCase();
 
                 // Concatenamos el ID del mensaje antes del comando
                 String mensajeProtocolo = idMensaje + " " + comandoAEnviar;
@@ -75,17 +76,20 @@ public class Cliente {
                 String respuesta = br.readLine();
                 System.out.println("[Servidor responde]: " + respuesta);
 
-                if (comandoAEnviar.toUpperCase().startsWith("PASS") && respuesta.contains(" 200 ")) {
+                if (respuesta == null) {
+                    System.out.println("El servidor ha cerrado la conexion");
+                    break;
+                }
+                if (comandoToUpperCase.startsWith("PASS") && respuesta.contains(" 200 ")) {
                     sesionIniciada = true;
                     System.out.println("¡Login correcto! Accediendo al sistema...");
                 }
                 // En caso de que el servidor responda con PREOK
-                if (respuesta != null && respuesta.toUpperCase().startsWith("PREOK")) {
+                if (respuesta.toUpperCase().startsWith("PREOK")) {
 
                     if (comandoAEnviar.toUpperCase().startsWith("ADDCLUB")) {
                         Club nuevoClub = new modelos.Club(partes[1], partes[2]);
                         enviarObjetoAServidor(respuesta, nuevoClub);
-
                     } else if (comandoAEnviar.toUpperCase().startsWith("UPDATECLUB")) {
                         Club clubActualizado = new Club(partes[1], partes[2]);
                         enviarObjetoAServidor(respuesta, clubActualizado);
