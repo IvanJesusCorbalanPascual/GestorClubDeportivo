@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class Cliente {
@@ -41,15 +40,20 @@ public class Cliente {
                     // Cuando el usuario haya iniciado sesion, desbloqueará el acceso a todas las opciones del CRUD
                 } else if (sesionIniciada == true) {
                     System.out.println("\n--- SISTEMA GESTIÓN DEPORTIVA [🍏GreenTonic🍏]---");
-                    System.out.println(" > ADDCLUB <id> <nombre>   (Crea un nuevo club)");
-                    System.out.println(" > LISTCLUBES              (Lista todos los clubes)");
-                    System.out.println(" > GETCLUB <id>            (Ej: GETCLUB 1)");
-                    System.out.println(" > UPDATECLUB <id>         (Ej: UPDATECLUB 1)");
-                    System.out.println(" > REMOVECLUB <id>         (Ej: REMOVECLUB 1)");
-                    System.out.println(" > COUNTCLUBES             (Cuenta total de clubes)");
-                    System.out.println(" > ADDJUGADOR              (Crea un nuevo jugador)");
-                    System.out.println(" > ADDJUGADOR2CLUB <idJ> <idC> (Añade jugador a un club)");
-                    System.out.println(" > EXIT                    (Cierra sesión y sale)");
+                    System.out.println(" > ADDCLUB    <id> <nombre>         (Crea un nuevo club)");
+                    System.out.println(" > LISTCLUBES                       (Lista todos los clubes)");
+                    System.out.println(" > GETCLUB    <id>                  (Ej: GETCLUB 1)");
+                    System.out.println(" > UPDATECLUB <id>                  (Ej: UPDATECLUB 1)");
+                    System.out.println(" > REMOVECLUB <id>                  (Ej: REMOVECLUB 1)");
+                    System.out.println(" > COUNTCLUBES                      (Cuenta total de clubes)");
+                    System.out.println(" > ADDJUGADOR                       (Crea un nuevo jugador)");
+                    System.out.println(" > GETJUGADOR    <id>               (Crea un nuevo jugador)");
+                    System.out.println(" > REMOVEJUGADOR <id>               (Crea un nuevo jugador)");
+                    System.out.println(" > LISTJUGADORES                    (Crea un nuevo jugador)");
+                    System.out.println(" > ADDJUGADOR2CLUB   <idJ> <idC>    (Añade jugador a un club)");
+                    System.out.println(" > REMOVEJUGFROMCLUB <idJ> <idC>    (Crea un nuevo jugador)");
+                    System.out.println(" > LISTJUGFROMCLUB                  (Crea un nuevo jugador)");
+                    System.out.println(" > EXIT                             (Cierra sesión y sale)");
                 }
 
                 System.out.print("root@club-deportivo:~$ "); // Un prompt estilo terminal que queda chulo
@@ -123,11 +127,19 @@ public class Cliente {
             if (recibido instanceof java.util.List) {
                 System.out.println("Lista de clubes:");
                 java.util.List lista = (java.util.List) recibido;
+
+                if(!lista.isEmpty() && lista.get(0) instanceof modelos.Jugador) {
+                    System.out.println("He recibido la lista de jugadores:");
+                } else {
+                    System.out.println("He recibido la lista de clubes:");
+                }
                 for (Object o : lista) {
                     System.out.println("       - " + o);
                 }
             } else if (recibido instanceof modelos.Club) {
                 System.out.println("He recibido un Club: " + recibido);
+            } else if (recibido instanceof modelos.Jugador) {
+                System.out.println("He recibido un Jugador: " + recibido);
             }
 
             ois.close();

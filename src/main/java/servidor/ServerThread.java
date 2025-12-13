@@ -72,6 +72,12 @@ public class ServerThread extends Thread {
                         if (loginCorrecto) procesarAddJugadorToClub(numeroEnvio, partes);
                         else pw.println("FAILED " + numeroEnvio + " 403 Login requerido");
                         break;
+                    case "LISTJUGADORES":
+                        procesarListJugadores(numeroEnvio);
+                        break;
+                    case "GETJUGADOR":
+                        procesarGetJugador(numeroEnvio, partes);
+                        break;
                     case "EXIT":
                         pw.println("OK " + numeroEnvio + " 200 Bye");
                         socket.close();
@@ -304,6 +310,46 @@ public class ServerThread extends Thread {
             pw.println("FAILED " + numeroEnvio + " 404 Jugador o Club no encontrado");
         }
     }
+
+    private void procesarListJugadores(String numeroEnvio) {
+        if (!loginCorrecto) {
+            pw.println("FAILED " + numeroEnvio + " 403 Es necesario iniciar sesión antes");
+            return;
+        }
+        // Envía la lista de jugadores global
+        enviarObjeto(numeroEnvio, Server.jugadores);
+    }
+
+    private void procesarGetJugador(String numeroEnvio, String[] partes) {
+        if (!loginCorrecto) {
+            pw.println("FAILED " + numeroEnvio + " 403 Es necesario iniciar sesión antes");
+            return;
+        }
+        if (partes.length < 3) {
+            pw.println("FAILED " + numeroEnvio + " 404 Falta el ID del jugador (GETJUGADOR <id>)");
+            return;
+        }
+
+        String idJugador = partes[2];
+        Jugador jugadorEncontrado = null;
+
+        synchronized (Server.jugadores) {
+            for (Jugador j : Server.jugadores) {
+                if (j.getId().equals(idJugador)) {
+                    jugadorEncontrado = j;
+                    break;
+                }
+            }
+        }
+
+        if (jugadorEncontrado != null) {
+            enviarObjeto(numeroEnvio, jugadorEncontrado);
+        } else {
+            pw.println("FAILED " + numeroEnvio + " 404 Jugador no encontrado");
+        }
+    }
+
+
 
     private void enviarObjeto(String numeroEnvio, Object objetoAEnviar) {
         try {

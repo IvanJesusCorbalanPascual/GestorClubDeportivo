@@ -62,4 +62,14 @@ public class Jugador implements Serializable {
     private String nombre;
     private String apellidos;
     private int goles;
+
+    @Override
+    public String toString() {
+        return "Jugador{" +
+                "id='" + id + '\'' +
+                ", nombre='" + nombre + '\'' +
+                ", apellidos='" + apellidos + '\'' +
+                ", goles=" + goles +
+                '}';
+    }
 }
