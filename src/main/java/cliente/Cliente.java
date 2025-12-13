@@ -69,7 +69,9 @@ public class Cliente {
                     System.out.println("4. Actualizar Club -> UPDATECLUB <IdClub> <nombreClub>");
                     System.out.println("5. Eliminar Club -> REMOVECLUB <IdClub>");
                     System.out.println("6. Contar Clubes -> COUNTCLUBES");
-                    System.out.println("7. Salir -> EXIT");
+                    System.out.println("7. Listar Jugadores -> LISTJUGADORES");
+                    System.out.println("8. Buscar Jugador -> GETJUGADOR <id>");
+                    System.out.println("9. Salir -> EXIT");
 
                     opcionUsuario = sc.nextLine();
 
@@ -99,8 +101,17 @@ public class Cliente {
                             comandoAEnviar = "COUNTCLUBES";
                             break;
                         case "7":
+                            comandoAEnviar = "LISTJUGADORES";
+                            break;
+                        case "8":
+                            System.out.println("Escribe el ID del jugador:");
+                            String idJugador = sc.nextLine();
+                            comandoAEnviar = "GETJUGADOR " + idJugador;
+                            break;
+                        case "9":
                             comandoAEnviar = "EXIT";
                             break;
+
                         default:
                             // Comandos desconocidos o mal escritos
                             comandoAEnviar = opcionUsuario;
@@ -153,7 +164,7 @@ public class Cliente {
                 // Incrementamos el ID para el siguiente mensaje
                 idMensaje++;
 
-            } while (!opcionUsuario.equals("7") && !opcionUsuario.equalsIgnoreCase("EXIT"));
+            } while (!opcionUsuario.equals("9") && !opcionUsuario.equalsIgnoreCase("EXIT"));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -178,13 +189,20 @@ public class Cliente {
 
             // Comprueba que es y lo muestra
             if (recibido instanceof java.util.List) {
-                System.out.println("He recibido la lista de clubes:");
                 java.util.List lista = (java.util.List) recibido;
+
+                if(!lista.isEmpty() && lista.get(0) instanceof modelos.Jugador) {
+                    System.out.println("He recibido la lista de jugadores:");
+                } else {
+                    System.out.println("He recibido la lista de clubes:");
+                }
                 for (Object o : lista) {
                     System.out.println("       - " + o);
                 }
             } else if (recibido instanceof modelos.Club) {
                 System.out.println("He recibido un Club: " + recibido);
+            } else if (recibido instanceof modelos.Jugador) {
+                System.out.println("He recibido un Jugador: " + recibido);
             }
 
             ois.close();
