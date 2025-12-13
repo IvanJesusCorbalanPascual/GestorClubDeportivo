@@ -42,19 +42,21 @@ public class Cliente {
                     // Cuando el usuario haya iniciado sesion, desbloqueará el acceso a todas las opciones del CRUD
                 } else if (sesionIniciada == true) {
                     System.out.println("\n-------------- SISTEMA GESTIÓN DEPORTIVA ------[🍏GreenTonic🍏]------");
+                    System.out.println("=== GESTION DE CLUBES ===");
                     System.out.println(" > ADDCLUB    <id> <nombre>                     (Crear club)");
                     System.out.println(" > LISTCLUBES                                   (Listar todos los clubes)");
                     System.out.println(" > GETCLUB    <id>                              (Obtener club)");
-                    System.out.println(" > UPDATECLUB <id>                              (Actualizar club)");
+                    System.out.println(" > UPDATECLUB <id> <nuevo_nombre>               (Actualizar club)");
                     System.out.println(" > REMOVECLUB <id>                              (Eliminar club)");
                     System.out.println(" > COUNTCLUBES                                  (Cuenta total de clubes)");
+                    System.out.println("=== GESTION DE JUGADORES ===");
                     System.out.println(" > ADDJUGADOR <id> <nombre> <apellidos> <goles> (Crear jugador)");
                     System.out.println(" > GETJUGADOR    <id>                           (Obtener jugador)");
                     System.out.println(" > REMOVEJUGADOR <id>                           (Eliminar jugador)");
                     System.out.println(" > LISTJUGADORES                                (Listar todos los jugadores)");
-                    System.out.println(" > ADDJUGADOR2CLUB   <idJugador> <idClub>       (Agregar jugador a un club)");
-                    System.out.println(" > REMOVEJUGFROMCLUB <idJugador> <idClub>       (Eliminar jugador de un club)");
-                    System.out.println(" > LISTJUGFROMCLUB                              (Listar todos los jugadores de un club)");
+                    System.out.println(" > ADDJUGADOR2CLUB   <idJugador> <id_club>      (Agregar jugador a un club)");
+                    System.out.println(" > REMOVEJUGFROMCLUB <idJugador> <id_club>      (Eliminar jugador de un club)");
+                    System.out.println(" > LISTJUGFROMCLUB <id_club>                    (Listar todos los jugadores de un club)");
                     System.out.println(" > EXIT                                         (Cerrar sesión y salir)");
                 }
 

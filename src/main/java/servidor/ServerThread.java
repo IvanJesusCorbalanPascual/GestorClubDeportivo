@@ -142,7 +142,7 @@ public class ServerThread extends Thread {
     // nombre
     public void procesarUser(String numeroEnvio, String[] partes) {
         if (partes.length != 3) {
-            pw.println("FAILED " + numeroEnvio + " 401 Formato incorrecto -> USER <password>");
+            pw.println("FAILED " + numeroEnvio + " 401 Formato incorrecto -> USER <username>");
         }
         String user = partes[2];
         if (user.equalsIgnoreCase("admin")) {
@@ -215,7 +215,7 @@ public class ServerThread extends Thread {
             return;
         }
         if (partes.length != 2) {
-            pw.println("FAILED " + numeroEnvio + " 404 Formato incorrecto -> GETCLUB <id>");
+            pw.println("FAILED " + numeroEnvio + " 404 Formato incorrecto -> LISTCLUBES");
             return;
         }
 
@@ -308,8 +308,8 @@ public class ServerThread extends Thread {
             pw.println("FAILED " + numeroEnvio + " 403 Es necesario hacer login primero");
             return;
         }
-        if (partes.length != 5) {
-            pw.println("FAILED " + numeroEnvio + " 404 Formato incorrecto -> UPDATEJUGADOR <id_jugador> <id_club>");
+        if (partes.length != 6) {
+            pw.println("FAILED " + numeroEnvio + " 404 Formato incorrecto -> ADDJUGADOR <id_jugador> <id_club>");
             return;
         }
 

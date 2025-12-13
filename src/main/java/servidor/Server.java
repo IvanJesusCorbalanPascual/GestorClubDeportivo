@@ -12,6 +12,7 @@ public class Server {
     // Listas estáticas que guardan los clubes y los jugadores
     public static final ArrayList<Club> clubes = new ArrayList<Club>();
     public static final ArrayList<Jugador> jugadores = new ArrayList<>();
+
     // Cuenta las sesiones de clientes conectados
     public static int clientesConectados = 0;
 
@@ -23,9 +24,9 @@ public class Server {
             System.out.println("Servidor Iniciado en el puerto: " + puerto);
 
             // Crea y añade clubs de prueba
-            Club c1 = new Club("C1", "Real Madrid");
-            Club c2 = new Club("C2", "FC Barcelona");
-            Club c3 = new Club("C3", "Valencia CF");
+            Club c1 = new Club("C1", "Real_Madrid");
+            Club c2 = new Club("C2", "FC_Barcelona");
+            Club c3 = new Club("C3", "Valencia_CF");
 
             clubes.add(c1);
             clubes.add(c2);
@@ -34,7 +35,7 @@ public class Server {
             // Crea y añade jugadores de prueba
             Jugador j1 = new Jugador("J1", "Vinicius", "Jr", 15);
             Jugador j2 = new Jugador("J2", "Lamine", "Yamal", 10);
-            Jugador j3 = new Jugador("J3", "Hugo", "Duro", 12);
+            Jugador j3 = new Jugador("J3", "Iker", "Casillas", 0);
             Jugador j4 = new Jugador("J4", "Antoine", "Griezmann", 8);
 
             jugadores.add(j1);
@@ -42,7 +43,7 @@ public class Server {
             jugadores.add(j3);
             jugadores.add(j4);
 
-            // Añade jugadores dentro de un club para futuras pruebas
+            // Añadiendo jugadores dentro de un club para pruebas
             c1.addJugador(j1.getId(), j1); // Vinicius, Madrid
             c3.addJugador(j3.getId(), j3); // Hugo Duro, Valencia
 
