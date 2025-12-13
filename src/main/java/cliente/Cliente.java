@@ -36,8 +36,8 @@ public class Cliente {
                 if (sesionIniciada == false) {
                     System.out.println("\n--- CLIENTE CLUB DEPORTIVO ---");
                     System.out.println("Escribe el comando completo (Ej: USER admin)");
-                    System.out.println("1. Introducir Usuario USER <usuario>");
-                    System.out.println("2. Introducir Clave -> PASS <clave>");
+                    System.out.println("1. Introducir Usuario USER <username>");
+                    System.out.println("2. Introducir Clave -> PASS <password>");
                     System.out.println("3. Salir -> (EXIT)");
                     System.out.print("➡ ");
                     opcionUsuario = sc.nextLine();

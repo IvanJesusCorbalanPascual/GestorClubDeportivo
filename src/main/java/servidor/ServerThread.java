@@ -1,7 +1,9 @@
 package servidor;
 
 import modelos.Club;
+import modelos.Jugador;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -65,6 +67,14 @@ public class ServerThread extends Thread {
                         procesarUpdateClub(numeroEnvio, partes);
                         break;
                     case "REMOVECLUB":
+                        break;
+//                    case "ADDJUGADOR":
+//                        if (loginCorrecto) procesarAddJugador(numeroEnvio);
+//                        else pw.println("FAILED "+numeroEnvio+" 403 Inicio de Sesión requerido");
+//                        break;
+                    case "ADDJUGADOR2CLUB":
+                        if (loginCorrecto) procesarAddJugadorToClub(numeroEnvio, partes);
+                        else pw.println("FAILED " + numeroEnvio + " 403 Login requerido");
                         break;
                     case "EXIT":
                         pw.println("OK " + numeroEnvio + " 200 Bye");
@@ -230,6 +240,68 @@ public class ServerThread extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
             pw.println("FAILED " + numeroEnvio + " 500 Error al actualizar");
+        }
+    }
+
+//    private void procesarAddJugador(String numeroEnvio) throws IOException {
+//        try (ServerSocket dataSocket = new ServerSocket(0)){
+//            int puertoDatos = dataSocket.getLocalPort();
+//            pw.println("PREOK " + numeroEnvio + " 200 localhost " + puertoDatos);
+//
+//            try {
+//                Socket clienteDatos = dataSocket.accept();
+//                 ObjectInputStream ois = new ObjectInputStream(clienteDatos.getInputStream())) {
+//                 modelos.Jugador nuevoJugador = (modelos.Jugador) ois.readObject();
+//
+//                 synchronized (Server.jugadores) {
+//                Server.jugadores.add(nuevoJugador);
+//            }
+//
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            pw.println("FAILED " + numeroEnvio + " 500 Error al actualizar");
+//        }
+//    }
+
+    private void procesarAddJugadorToClub(String numeroEnvio, String[] partes) {
+        if (partes.length < 4) {
+            pw.println("FAILED " + numeroEnvio + " 400 Faltan argumentos (ID_JUGADOR ID_CLUB)");
+            return;
+        }
+        String idJugador = partes[2];
+        String idClub = partes[3];
+
+        Jugador jugadorEncontrado = null;
+        Club clubEncontrado = null;
+
+        // Buscamos el Jugador por su id
+        synchronized (Server.jugadores) {
+            for (Jugador j : Server.jugadores) {
+                if (j.getId().equals(idJugador)) {
+                    jugadorEncontrado = j;
+                    break;
+                }
+            }
+        }
+        // Buscamos el Club por su id
+        synchronized (Server.clubes) {
+            for (Club c : Server.clubes) {
+                if (c.getId().equals(idClub)) {
+                    clubEncontrado = c;
+                    break;
+                }
+            }
+        }
+
+        // Si se encontró tanto al jugador como al club, se llama al metodo de la clase Club que inserta dentro de este Club
+        // un jugador por su id, y el objeto del jugador encontrado
+        if (jugadorEncontrado != null && clubEncontrado != null) {
+            clubEncontrado.addJugador(jugadorEncontrado.getId(), jugadorEncontrado);
+            pw.println("OK " + numeroEnvio + " 200 Jugador " + idJugador + " añadido al club " + idClub);
+
+        } else {
+            pw.println("FAILED " + numeroEnvio + " 404 Jugador o Club no encontrado");
         }
     }
 
