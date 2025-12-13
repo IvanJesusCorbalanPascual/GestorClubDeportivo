@@ -35,9 +35,9 @@ public class ServerThread extends Thread {
             br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             pw = new PrintWriter(socket.getOutputStream(), true);
 
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                String[] partes = line.trim().split(" ");
+            String mensaje = null;
+            while ((mensaje = br.readLine()) != null) {
+                String[] partes = mensaje.trim().split(" ");
                 if (partes.length < 2) {
                     pw.println("Error, formato incorrecto");
                     continue;
@@ -57,10 +57,10 @@ public class ServerThread extends Thread {
                         pw.println("OK " + numeroEnvio + " 200 " + Server.clientesConectados);
                         break;
                     case "ADDCLUB":
-                        procesarAddClub(numeroEnvio);
+                        procesarAddClub(numeroEnvio, partes);
                         break;
                     case "LISTCLUBES":
-                        procesarListClubes(numeroEnvio);
+                        procesarListClubes(numeroEnvio, partes);
                         break;
                     case "GETCLUB":
                         procesarGetClub(numeroEnvio, partes);
@@ -74,21 +74,23 @@ public class ServerThread extends Thread {
                     case "COUNTCLUBES":
                         procesarCountClubes(numeroEnvio);
                         break;
-                    // case "ADDJUGADOR":
-                    // if (loginCorrecto) procesarAddJugador(numeroEnvio);
-                    // else pw.println("FAILED "+numeroEnvio+" 403 Inicio de Sesión requerido");
-                    // break;
+                    case "ADDJUGADOR":
+                        if (loginCorrecto)
+                            procesarAddJugador(numeroEnvio);
+                        else
+                            pw.println("FAILED " + numeroEnvio + " 403 Inicio de Sesión requerido");
+                        break;
+                    case "GETJUGADOR":
+                        procesarGetJugador(numeroEnvio, partes);
+                        break;
+                    case "LISTJUGADORES":
+                        procesarListJugadores(numeroEnvio);
+                        break;
                     case "ADDJUGADOR2CLUB":
                         if (loginCorrecto)
                             procesarAddJugadorToClub(numeroEnvio, partes);
                         else
                             pw.println("FAILED " + numeroEnvio + " 403 Login requerido");
-                        break;
-                    case "LISTJUGADORES":
-                        procesarListJugadores(numeroEnvio);
-                        break;
-                    case "GETJUGADOR":
-                        procesarGetJugador(numeroEnvio, partes);
                         break;
                     case "EXIT":
                         pw.println("OK " + numeroEnvio + " 200 Bye");
@@ -128,8 +130,8 @@ public class ServerThread extends Thread {
     // Metodo que válida si el usuario puede acceder al sistema o no en base a su
     // nombre
     public void procesarUser(String numeroEnvio, String[] partes) {
-        if (partes.length < 3) {
-            pw.println("Error, formato incorrecto");
+        if (partes.length != 3) {
+            pw.println("FAILED " + numeroEnvio + " 401 Formato incorrecto -> USER <password>");
         }
         String user = partes[2];
         if (user.equalsIgnoreCase("admin")) {
@@ -148,12 +150,12 @@ public class ServerThread extends Thread {
             pw.println("FAILED " + numeroEnvio + " 402 Primero envíe <USER>");
             return;
         }
-        if (partes.length < 3) {
-            pw.println("FAILED " + numeroEnvio + " 401 Usuario incorrecto");
+        if (partes.length != 3) {
+            pw.println("FAILED " + numeroEnvio + " 401 Formato incorrecto -> PASS <password>");
             return;
         }
         String pass = partes[2]; // Estamos cogiendo como valor de contraseña la tercera palabra del comando
-        if (pass.equalsIgnoreCase("admin")) { // Si la contraseña es "admin" entonces tod0 guay
+        if (pass.equalsIgnoreCase("admin")) { // Si la contraseña es "admin", loginCorrecto = true
             loginCorrecto = true;
             pw.println("OK " + numeroEnvio + " 200 Bienvenido " + nombreUsuario);
         } else {
@@ -163,9 +165,13 @@ public class ServerThread extends Thread {
         }
     }
 
-    private void procesarAddClub(String numeroEnvio) throws IOException {
+    private void procesarAddClub(String numeroEnvio, String[] partes) throws IOException {
         if (!loginCorrecto) {
             pw.println("FAILED " + numeroEnvio + " 403 Es necesario hacer login primero");
+            return;
+        }
+        if (partes.length != 4) {
+            pw.println("FAILED " + numeroEnvio + " 404 Formato incorrecto -> ADDCLUB <id> <nombre>)");
             return;
         }
         // Abriendo un puerto para DATOS en 0 para que el sistema nos dé uno libre
@@ -183,6 +189,7 @@ public class ServerThread extends Thread {
                     Server.clubes.add(nuevoClub);
                 }
                 pw.println("OK " + numeroEnvio + " 201 Club creado con exito " + nuevoClub.getNombre());
+
             } catch (Exception e) {
                 e.printStackTrace();
                 pw.println("FAILED " + numeroEnvio + " 500 Usuario incorrecto");
@@ -190,13 +197,18 @@ public class ServerThread extends Thread {
         }
     }
 
-    private void procesarListClubes(String numeroEnvio) {
+    private void procesarListClubes(String numeroEnvio, String[] partes) throws IOException {
         // Si no se ha logueado, no puede ver nada
         if (!loginCorrecto) {
             pw.println("FAILED " + numeroEnvio + " 403 Es necesario hacer login primero");
             return;
         }
-        // Le pasa la lista de clubes de server
+        if (partes.length != 2) {
+            pw.println("FAILED " + numeroEnvio + " 404 Formato incorrecto -> GETCLUB <id>");
+            return;
+        }
+
+        // Enviamos la lista de clubes
         enviarObjeto(numeroEnvio, Server.clubes);
     }
 
@@ -206,9 +218,8 @@ public class ServerThread extends Thread {
             pw.println("FAILED " + numeroEnvio + " 403 Es necesario hacer login primero");
             return;
         }
-        // Valída que están todos los argumentos necesarios
-        if (partes.length < 3) {
-            pw.println("FAILED " + numeroEnvio + " 404 Falta el ID del club (Ejemplo: GETCLUB 1)");
+        if (partes.length != 3) {
+            pw.println("FAILED " + numeroEnvio + " 404 Formato incorrecto -> GETCLUB <id>");
             return;
         }
 
@@ -235,14 +246,14 @@ public class ServerThread extends Thread {
     }
 
     private void procesarUpdateClub(String numeroEnvio, String[] partes) {
-        if (partes.length < 3) {
-            pw.println("FAILED " + numeroEnvio + " 404 Falta el ID del club (UPDATECLUB <id>)");
+        if (partes.length != 4) {
+            pw.println("FAILED " + numeroEnvio + " 404 Formato incorrecto -> UPDATECLUB <id> <nuevo_nombre>");
             return;
         }
         String idBuscado = partes[2];
         Club clubAActualizar = null;
 
-        // Bucle que busca dentro del ArrayList "clubes" uno con el id pasado, si lo
+        // Bucle que busca dentro del ArrayList "clubes" uno con el ID pasando, si lo
         // encuentra lo actualiza
         synchronized (Server.clubes) {
             for (Club c : Server.clubes) {
@@ -281,30 +292,37 @@ public class ServerThread extends Thread {
         }
     }
 
-    // private void procesarAddJugador(String numeroEnvio) throws IOException {
-    // try (ServerSocket dataSocket = new ServerSocket(0)){
-    // int puertoDatos = dataSocket.getLocalPort();
-    // pw.println("PREOK " + numeroEnvio + " 200 localhost " + puertoDatos);
-    //
-    // try {
-    // Socket clienteDatos = dataSocket.accept();
-    // ObjectInputStream ois = new ObjectInputStream(clienteDatos.getInputStream()))
-    // {
-    // modelos.Jugador nuevoJugador = (modelos.Jugador) ois.readObject();
-    //
-    // synchronized (Server.jugadores) {
-    // Server.jugadores.add(nuevoJugador);
-    // }
-    //
-    //
-    // } catch (Exception e) {
-    // e.printStackTrace();
-    // pw.println("FAILED " + numeroEnvio + " 500 Error al actualizar");
-    // }
-    // }
+    private void procesarAddJugador(String numeroEnvio) throws IOException {
+        if (!loginCorrecto) {
+            pw.println("FAILED " + numeroEnvio + " 403 Es necesario hacer login primero");
+            return;
+        }
+
+        try (ServerSocket dataSocket = new ServerSocket(0)) {
+            int puertoDatos = dataSocket.getLocalPort();
+            String ip = "localhost";
+            pw.println("PREOK " + numeroEnvio + " 200 " + ip + " " + puertoDatos);
+
+            try (Socket clienteDatos = dataSocket.accept();) {
+                ObjectInputStream ois = new ObjectInputStream(clienteDatos.getInputStream());
+                Jugador nuevoJugador = (Jugador) ois.readObject();
+
+                synchronized (Server.jugadores) {
+                    Server.jugadores.add(nuevoJugador);
+                }
+                pw.println("OK " + numeroEnvio + " 201 Jugador creado con éxito " + nuevoJugador.getNombre());
+
+            } catch (ClassNotFoundException e) {
+                pw.println("FAILED " + numeroEnvio + " 500 Error en el formato del objeto Jugador");
+            } catch (IOException e) {
+                e.printStackTrace();
+                pw.println("FAILED " + numeroEnvio + " 500 Error al abrir el Socket");
+            }
+        }
+    }
 
     private void procesarAddJugadorToClub(String numeroEnvio, String[] partes) {
-        if (partes.length < 4) {
+        if (partes.length != 4) {
             pw.println("FAILED " + numeroEnvio + " 400 Faltan argumentos (ID_JUGADOR ID_CLUB)");
             return;
         }
