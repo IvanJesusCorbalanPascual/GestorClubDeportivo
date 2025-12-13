@@ -35,6 +35,7 @@ public class Cliente {
                     System.out.println("\n--- INICIO DE SESION ---");
                     System.out.println(" > USER <nombre>      (Ej: USER admin)");
                     System.out.println(" > PASS <contraseña>  (Ej: PASS admin)");
+                    System.out.println(" > SESIONES           (Usuarios conectados)");
                     System.out.println(" > EXIT               (Salir del programa)");
 
                     // Cuando el usuario haya iniciado sesion, desbloqueará el acceso a todas las opciones del CRUD
@@ -116,6 +117,7 @@ public class Cliente {
 
             System.out.println("Conectando a " + ip + ":" + puerto + " para descargar...");
 
+
             Socket socketDatos = new Socket(ip, puerto);
 
             // Prepara el lector de objetos
@@ -123,17 +125,19 @@ public class Cliente {
 
             Object recibido = ois.readObject();
 
-            // Comprueba que es y lo muestra
+            // Comprueba el tipo de objeto recibido para mostrar el mensaje correcto
             if (recibido instanceof java.util.List) {
                 System.out.println("Lista de clubes:");
                 java.util.List lista = (java.util.List) recibido;
 
+                // Comprueba el primer elemento para saber que tipo de lista es (Jugadores o Clubes)
                 if(!lista.isEmpty() && lista.get(0) instanceof modelos.Jugador) {
                     System.out.println("He recibido la lista de jugadores:");
                 } else {
                     System.out.println("He recibido la lista de clubes:");
                 }
                 for (Object o : lista) {
+                    // Llama el toString de club/jugadores dependiendo de cuál sea
                     System.out.println("       - " + o);
                 }
             } else if (recibido instanceof modelos.Club) {
@@ -142,6 +146,7 @@ public class Cliente {
                 System.out.println("He recibido un Jugador: " + recibido);
             }
 
+            // Cierra los recursos y muestra por pantalla que funciono
             ois.close();
             socketDatos.close();
             System.out.println("Datos recibidos con éxito");

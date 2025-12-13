@@ -12,6 +12,8 @@ public class Server {
     // Listas estáticas que guardan los clubes y los jugadores
     public static final ArrayList<Club> clubes = new ArrayList<Club>();
     public static final ArrayList<Jugador> jugadores = new ArrayList<>();
+    // Cuenta las sesiones de clientes conectados
+    public static int clientesConectados = 0;
 
     public static void main(String[] args) throws IOException {
 

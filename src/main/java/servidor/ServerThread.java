@@ -24,6 +24,10 @@ public class ServerThread extends Thread {
 
     public ServerThread(Socket socket) {
         this.socket = socket;
+        // Suma un cliente conectado al crear el hilo
+        synchronized (Server.class) {
+            Server.clientesConectados++;
+        }
     }
 
     @Override
@@ -49,6 +53,9 @@ public class ServerThread extends Thread {
                         break;
                     case "PASS":
                         procesarPass(numeroEnvio, partes);
+                        break;
+                    case "SESIONES":
+                        pw.println("OK " + numeroEnvio + " 200 " + Server.clientesConectados);
                         break;
                     case "ADDCLUB":
                         procesarAddClub(numeroEnvio);
@@ -94,7 +101,21 @@ public class ServerThread extends Thread {
 
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            // Se ejecuta siempre al desconectarse un cliente o si hay un error
+            synchronized (Server.class) {
+                if (Server.clientesConectados > 0) {
+                    Server.clientesConectados--;
+                }
+            }
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Cliente desconectado. Total de clientes actual: " + Server.clientesConectados);
         }
+
     }
 
     // --- METODOS DE COMANDOS ---
@@ -172,11 +193,13 @@ public class ServerThread extends Thread {
         enviarObjeto(numeroEnvio, Server.clubes);
     }
 
+    // Mét0d0 que busca un club
     private void procesarGetClub(String numeroEnvio, String[] partes) {
         if (!loginCorrecto) {
             pw.println("FAILED " + numeroEnvio + " 403 Es necesario hacer login primero");
             return;
         }
+        // Valída que están todos los argumentos necesarios
         if (partes.length < 3) {
             pw.println("FAILED " + numeroEnvio + " 404 Falta el ID del club (Ejemplo: GETCLUB 1)");
             return;
@@ -186,12 +209,12 @@ public class ServerThread extends Thread {
         String idBuscado = partes[2];
         Club clubEncontrado = null;
 
-        // Synchronized evita errores
+        // Bloquea la lista de clubes con synchronized para evitar errores
         synchronized (Server.clubes) {
             for (Club c : Server.clubes) {
                 if (c.getId().equals(idBuscado)) {
                     clubEncontrado = c;
-                    // Si lo encuentra, deja de buscar
+                    // Si lo encuentra, deja de buscar en la lista
                     break;
                 }
             }
@@ -311,6 +334,7 @@ public class ServerThread extends Thread {
         }
     }
 
+    // Met0d0 para listar los jugadores
     private void procesarListJugadores(String numeroEnvio) {
         if (!loginCorrecto) {
             pw.println("FAILED " + numeroEnvio + " 403 Es necesario iniciar sesión antes");
@@ -320,6 +344,7 @@ public class ServerThread extends Thread {
         enviarObjeto(numeroEnvio, Server.jugadores);
     }
 
+    // Met0d0 para buscar un jugador
     private void procesarGetJugador(String numeroEnvio, String[] partes) {
         if (!loginCorrecto) {
             pw.println("FAILED " + numeroEnvio + " 403 Es necesario iniciar sesión antes");
@@ -350,7 +375,7 @@ public class ServerThread extends Thread {
     }
 
 
-
+    // Met0d0 para enviar objetos en el canal de datos, como listas o objetos sueltos
     private void enviarObjeto(String numeroEnvio, Object objetoAEnviar) {
         try {
             // Al poner 0, busca automáticamente un puerto libre
@@ -358,7 +383,7 @@ public class ServerThread extends Thread {
             // Guarda el puerto que ha tocado
             int puertoDatos = servidorDatos.getLocalPort();
 
-            // Avisa al cliente por el canal de comandos
+            // Avisa al cliente por el canal de comandos indicando donde deber conectarse
             String miIp = socket.getLocalAddress().getHostAddress();
             pw.println("PREOK " + numeroEnvio + " 200 " + miIp + " " + puertoDatos);
 
@@ -372,11 +397,12 @@ public class ServerThread extends Thread {
             oos.writeObject(objetoAEnviar);
             oos.flush();
 
-            // Cierra lo que hemos abierto
+            // Cierra lo que hemos abierto tras su uso
             oos.close();
             socketDatos.close();
             servidorDatos.close();
 
+            // Avisa al usuario que se ha completado la transferencia
             pw.println("OK " + numeroEnvio + " 200 Transferencia completada");
 
         } catch (IOException e) {
